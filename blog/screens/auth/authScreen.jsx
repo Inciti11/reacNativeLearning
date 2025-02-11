@@ -1,70 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Animated,
-  Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Login from '../../components/specific/auth/login/login';
 import Register from '../../components/specific/auth/register/register';
+import SlidePanel from '../../components/common/slidePanel/SlidePanel';
 
 const AuthScreen = () => {
   const [showLogin, setShowLogin] = useState(true);
-  const [isPanelOpen, setIsPanelOpen] = useState(true);
-  const [panelHeight, setPanelHeight] = useState(0);
-  const translateY = useRef(new Animated.Value(0)).current;
-  const handleHeight = 40;
-  const timeoutRef = useRef(null);
 
   const toggleAuthMode = () => {
     setShowLogin(!showLogin);
-    setPanelHeight(0);
   };
-  
-  const togglePanel = () => {
-    if (panelHeight === 0) return;
-    const toValue = isPanelOpen ? panelHeight - handleHeight : 0;
-    Animated.timing(translateY, {
-      toValue,
-      duration: 600,
-      easing: Easing.inOut(Easing.cubic),
-      useNativeDriver: true,
-    }).start();
-    setIsPanelOpen(!isPanelOpen);
-  };
-
-  const updatePanelHeight = (height) => {
-    setPanelHeight(height);
-    if (!isPanelOpen) {
-      translateY.setValue(height - handleHeight);
-    } else {
-      translateY.setValue(0);
-    }
-  };
-
-  const onPanelLayout = (event) => {
-    const { height } = event.nativeEvent.layout;
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(() => {
-      updatePanelHeight(height);
-    }, 100);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -95,13 +47,12 @@ const AuthScreen = () => {
         </View>
 
         <View style={styles.bottomSection}>
-          <Animated.View
-            style={[styles.whiteContainer, { transform: [{ translateY }] }]}
-            onLayout={onPanelLayout}
+          <SlidePanel
+            mode="drawer"
+            initiallyOpen={true}
+            style={styles.slidePanelStyle}
+            contentContainerStyle={styles.slidePanelContent}
           >
-            <TouchableOpacity style={styles.drawerHandle} onPress={togglePanel}>
-              <View style={styles.handleBar} />
-            </TouchableOpacity>
             <View style={styles.welcomeContainer}>
               <Text style={styles.welcomeText}>
                 {showLogin ? 'BIENVENIDO' : 'CREAR CUENTA'}
@@ -119,7 +70,7 @@ const AuthScreen = () => {
             ) : (
               <Register />
             )}
-          </Animated.View>
+          </SlidePanel>
         </View>
       </View>
     </SafeAreaView>
@@ -195,38 +146,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  whiteContainer: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 30,
-    paddingTop: 0,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  drawerHandle: {
-    alignSelf: 'center',
-    marginBottom: 15,
-    height: 40,
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  handleBar: {
-    width: 100,
-    height: 8,
-    backgroundColor: '#ddd',
-    borderRadius: 50,
-  },
   welcomeContainer: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   welcomeText: {
     fontSize: 24,
@@ -240,6 +162,11 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
     textDecorationLine: 'underline',
+  },
+  slidePanelStyle: {
+    padding: 20,
+  },
+  slidePanelContent: {
   },
 });
 
